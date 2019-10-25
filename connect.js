@@ -1,5 +1,5 @@
 import assert from './assert'
-export default (React,Context) => {
+export default (React,Context,dispatch) => {
   assert(React,'requires react library')
   assert(Context,'requires react context')
   return (Child,map=x=>x) => {
@@ -7,7 +7,7 @@ export default (React,Context) => {
       return React.createElement(
         Context.Consumer,
         null,
-        state=>React.createElement(Child,{ ...map(state), ...props, })
+        state=>React.createElement(Child,{ dispatch, ...map(state), ...props, })
       )
     }
   }

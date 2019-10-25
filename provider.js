@@ -1,5 +1,5 @@
 import assert from './assert'
-export default (React,init,dispatch,Context, events) => {
+export default (React,init,Context, events) => {
   assert(React,'requires react library')
   assert(Context,'requires react context')
   assert(events,'requires events')
@@ -9,9 +9,9 @@ export default (React,init,dispatch,Context, events) => {
 
     const [state,setState] = React.useState(()=>{
       events.listen(state=>{
-        setState({ ...state, ...rest, dispatch, })
+        setState({ ...state, ...rest,  })
       })
-      return {...init,...rest,dispatch}
+      return {...init,...rest}
     })
 
     return React.createElement(Context.Provider,{value:state}, children)

@@ -32,18 +32,28 @@ let {Provider,dispatch,connect} = wiring
 //this is the main app. 
 const App = connect(props=>{
   //"dispatch" will get passed in plus the default state
+  //dispatch will always be available.
   const {dispatch,initialized} = props
 
   return <div>
     Initialized {initialized}
     <Button onClick={e=>dispatch('initialize')(true)} />
   </div>
+},props=>{
+  //optional mapping function to pass into component
+  //if not specified, all props will be injected
+  return {
+    initialied:props.initialized
+    //props.magicNumber is omitted but available
+  }
 })
 
 //initilize react app
 const anchor = document.getElementById("app");            
 ReactDOM.render(                                           
-  <Provider>                                    
+//you can provide props in the provider, and these will always be accessible
+//from child components unless the optional map omits it
+  <Provider magicNumber={42}>                                    
     <App/>                                                 
   </Provider>,                                             
   anchor                                                  
