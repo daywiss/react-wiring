@@ -105,3 +105,50 @@ ReactDOM.render(
   anchor                                                  
 )
 ```
+
+## Combine Reducers
+Redux has a combineReducers function. You can get close to this functionality by merging your
+reducer objects as long as keys do not collide. This does not provide any performance
+improvents and is just organizational.
+
+
+```
+//user-reducer.js
+export default {
+  updateUserName(state,name){
+    return {
+      ...state,
+      'user':{...state.user,name}
+    }
+  }
+}
+```
+
+```
+//wallet-reducer.js
+export default {
+  setBalance(state,balance){
+    return {
+      ...state,
+      'wallet':{...state.wallet,balance}
+    }
+  }
+}
+```
+
+```
+//combine-reducers.js
+import user from 'user-reducer'
+import wallet from 'user-reducer'
+import Wiring from 'react-wiring'
+import React from 'react'
+
+const reducers = { 
+  ...user,
+  ..wallet
+}
+
+export default Wiring(React,reducers)
+
+```
+
