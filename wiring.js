@@ -1,23 +1,50 @@
-import Dispatch from './dispatch'
 import Provider from './provider'
-import Connect from './connect'
-import Events from './events'
 import assert from './assert'
 
-export default (React,state={},reducers={}) => {
+export default (React,reducers={},state={}) => {
   assert(React,'requires react library')
-  const Context = React.createContext()
-  const events = Events()
 
-  const dispatch =  Dispatch(state,reducers,events.emit)
-  const provider = Provider(React,state,Context,events)
-  const connect = Connect(React,Context,dispatch)
+  const contexts = {
+    dispatch:React.createContext(),
+    state:React.createContext(),
+    constants:React.createContext(),
+  }
+
+  const provider = Provider(React,contexts,reducers,state)
+
+  const Use = (name,Context) => () =>{
+    const context = React.useContext(Context)
+    if (context === undefined) {
+      throw new Error(`use${name} must be used within a ReactWiring Provider`)
+    }
+    return context
+  }
+
+  const useState = Use('State',contexts.state)
+  const useDispatch = Use('Dispatch',contexts.dispatch)
+  const useConstants = Use('Constants',contexts.constants)
+
+  const useWiring = ()=>{
+    return [
+      useState(),
+      useDispatch(),
+      useConstants(),
+    ]
+  }
 
   return {
-    Provider:provider,
-    dispatch,
-    connect,
-    events
+    WiringProvider:provider,
+    useWiring,
+    useState,
+    useDispatch,
+    useConstants,
+    connect(Child,isEqual,map=x=>x){
+      const memo = React.memo(Child,isEqual)
+      return props=>{
+        const [state,dispatch,constants] = useWiring()
+        return React.createElement(memo,{dispatch,...constants,...map(state),...props})
+      }
+    }
   }
 
 }

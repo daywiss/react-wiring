@@ -1,20 +1,29 @@
 import assert from './assert'
-export default (React,init,Context, events) => {
+export default (React,contexts, handlers,defaultState={}) => {
   assert(React,'requires react library')
-  assert(Context,'requires react context')
-  assert(events,'requires events')
+  assert(handlers,'requires handlers')
+  assert(contexts,'requires contexts')
 
-  return (props) => {
-    const {children,...rest} = props
+  return ({children,...props}) => {
 
-    const [state,setState] = React.useState(()=>{
-      events.listen(state=>{
-        setState({ ...state, ...rest,  })
-      })
-      return {...init,...rest}
-    })
+    const [state,dispatch] = React.useReducer((state,{action,args=[]})=>{
+      assert(handlers[action],'No handler for action: ' + action)
+      return handlers[action](state,...args)
+    },defaultState)
 
-    return React.createElement(Context.Provider,{value:state}, children)
+    const wrap = React.useRef(action => (...args) => {
+      return dispatch({action,args})
+    }).current
+
+    const constants = React.useRef(props).current
+
+    return React.createElement(contexts.state.Provider,{value:state},
+      React.createElement(contexts.constants.Provider,{value:constants},
+       React.createElement(contexts.dispatch.Provider,{value:wrap},
+          children
+        )
+      )
+    )
   }
 
 }
