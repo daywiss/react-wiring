@@ -58,6 +58,7 @@ const App = connect(props=>{
 
   return <div>
     Initialized {initialized}
+    Magic Number {magicNumber}
     <Button onClick={e=>dispatch('initialize')(true)} />
   </div>
 },
@@ -75,6 +76,23 @@ props=>{
     initialied:props.initialized
   }
 })
+
+//this uses the build in hooks, but you cannot
+//use memoization easily.
+const AppUsingHooks = props=>{
+  const dispatch = useDispatch()
+  const state = useState()
+  const constants = useConstants()
+
+  //this is equivalent
+  //const [state,dispatch,constants] = useWiring()
+
+  return <div>
+    Initialized {state.initialized}
+    Magic Number {constants.magicNumber}
+    <Button onClick={e=>dispatch('initialize')(true)} />
+  </div>
+}
 
 //initilize react app
 const anchor = document.getElementById("app");            
