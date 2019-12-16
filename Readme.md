@@ -139,7 +139,7 @@ export default {
 ```
 //combine-reducers.js
 import user from 'user-reducer'
-import wallet from 'user-reducer'
+import wallet from 'wallet-reducer'
 import Wiring from 'react-wiring'
 import React from 'react'
 
