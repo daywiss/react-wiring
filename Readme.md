@@ -176,6 +176,8 @@ Use wiring can only be called within a React component
   - `function isEqual(prev,next)=>boolean` - a function which takes the previous state 
     and next state and returns true if no change happens or false if a change happens
     this is exactly the same as React.memo
+- mapping(state)=>mappedState - This is a function which takes in state and returns a mapped state.
+  It does not affect the way you subscribe, that is relative to unmapped state.
 
 #### Output [state,dispatch,curryDispatch]
 - state - Your store state
