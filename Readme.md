@@ -149,12 +149,12 @@ export function Balance(props){
   const {useWiring,store} = Wiring(React,reducers,initialState={})
 ```
   
-#### Input
+#### Input(React,reducers,initialState={})
 - React - pass in your React object vs 16.8 or higher (requires hooks)
 - reducers - A plain object with reducer functions as values
 - initialState - An object with anything in it as your starting state
 
-#### Output
+#### Output => {useWiring,store}
 - useWiring - the use wiring hook for inside a React component
 - store - the data store which allows you to get, set, dispatch and listen to state changes
 
@@ -165,7 +165,7 @@ Use wiring can only be called within a React component
   const [state,dispatch,curryDispatch] = useWiring(subscriptions,mapping)
 ```
 
-#### Input
+#### Input (subscriptions,mapping)
 - subscription - This is how you subscribe to state changes, and can be defined in many ways:
   - `undefined` - render will happen once and no more
   - `string` - a single string to listen to one property on state, in lodash path notation.
@@ -179,7 +179,9 @@ Use wiring can only be called within a React component
 - mapping(state)=>mappedState - This is a function which takes in state and returns a mapped state.
   It does not affect the way you subscribe, that is relative to unmapped state.
 
-#### Output [state,dispatch,curryDispatch]
+#### Output => [state,dispatch,curryDispatch]
+Outputs an array of parameters that should be destructured.
+
 - state - Your store state
 - function dispatch(action,...arguments) - a function which takes and action and arguments
   - action - a string or array of strings which represent the path to the reducer function 
@@ -187,6 +189,28 @@ Use wiring can only be called within a React component
   - example: `login(username,password).then(x=>dispatch('showSuccess','Login Complete')).catch(err=>dispatch('showError',err))
 - function curryDispatch(action)=>(...arguments) - a function which returns the call for arguments
   - example: `login(username,password).then(x=>curryDispatch('showSuccess')('Login Complete')).catch(curryDispatch('showError'))
+
+### Store
+The store allows you to listen to state change and mutate state outside of React.
+```
+  const {store} = useWiring(reducer)
+  const {dispatch,curry,set,get,on,off} = store
+```
+#### Properties
+- store.dispatch(action,...arguments) - Call a reducer and specify arguments
+  - action - a string or array of strings which represent the path to the reducer function 
+  - arguments - all arguments get passed into reducer
+- store.curry(action)(...arguments) - Call a reducer in a curried way.
+  - action - a string or array of strings which represent the path to the reducer function 
+  - arguments - all arguments get passed into reducer
+- store.get() - return current state
+- store.set(state) - set state and trigger all listeners
+- store.on(callback,subscriptions)=>off - subscribe to state changes
+  - callback(state) - callback expects a single input which is the store state
+  - subscriptions - optional field to subscribe to key changes on state, defined above in useWiring
+  - returns - off() - return unsubscribe function
+- store.off(callback) - unsubscribe by passing callback function subscription in
+
 
 
 
