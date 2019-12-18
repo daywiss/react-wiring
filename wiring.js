@@ -9,14 +9,14 @@ export default (React,reducers,state) => {
 
   const store = Store(reducers,state)
 
-  return {
-    useWiring(isEqual,map=x=>x){
+  return [
+    function useWiring(isEqual,map=x=>x){
       const [state,setState] = useState(map(store.get()))
       useEffect(x=>store.on(state=>setState(map(state)),isEqual),[])
       return [state,store.dispatch,store.curry]
     },
     store
-  }
+  ]
 
 }
 
