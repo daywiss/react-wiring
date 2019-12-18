@@ -132,7 +132,7 @@ Outputs an array of parameters that should be destructured.
 ### Store
 The store allows you to listen to state change and mutate state outside of React.
 ```
-  const [_,store] = Wiring(reducer)
+  const [_,store] = Wiring(React,reducer)
   const {dispatch,curry,set,get,on,off} = store
 ```
 #### Properties
