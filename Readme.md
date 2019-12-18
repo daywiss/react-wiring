@@ -186,9 +186,9 @@ Outputs an array of parameters that should be destructured.
 - **function dispatch(action,...arguments)** - a function which takes and action and arguments
   - **action** - a string or array of strings which represent the path to the reducer function 
   - **arguments** - all arguments get passed into reducer
-  - example: `login(username,password).then(x=>dispatch('showSuccess','Login Complete')).catch(err=>dispatch('showError',err))
+  - example: `login(username,password).then(x=>dispatch('showSuccess','Login Complete')).catch(err=>dispatch('showError',err))`
 - **function curryDispatch(action)=>(...arguments)** - a function which returns the call for arguments
-  - example: `login(username,password).then(x=>curryDispatch('showSuccess')('Login Complete')).catch(curryDispatch('showError'))
+  - example: `login(username,password).then(x=>curryDispatch('showSuccess')('Login Complete')).catch(curryDispatch('showError'))`
 
 ### Store
 The store allows you to listen to state change and mutate state outside of React.
