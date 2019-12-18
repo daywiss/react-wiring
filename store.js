@@ -25,7 +25,7 @@ export default (reducers,state={})=>{
 
   const wrapPathArray = (paths=[]) => (prev,next)=>{
     //if an empty array is passed trigger every state update
-    if(paths.length == 0) return false
+    if(paths.length == 0) return prev == next
     return  paths.every(path=>{
       return get(prev,path) == get(next,path)
     })
@@ -33,7 +33,7 @@ export default (reducers,state={})=>{
 
   const wrapPathString = (path) => (prev,next)=>{
     //if empty string passed trigger every update
-    if(path.length == 0) return false
+    if(path.length == 0) return prev == next
     return get(prev,path) == get(next,path)
   }
 
