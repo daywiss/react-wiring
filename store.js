@@ -37,7 +37,7 @@ export default (reducers,state={})=>{
     return get(prev,path) == get(next,path)
   }
 
-  function on(isEqual,cb){
+  function on(cb,isEqual){
     assert(isFunction(cb),'requires callback function')
     
     cb(state)
@@ -52,7 +52,6 @@ export default (reducers,state={})=>{
       else if(isFunction(isEqual)){
         listeners.set(cb,isEqual)
       }else{
-        console.log({isEqual})
         throw new Error('isEqual must be string, array of strings, array of arrays, or a function')
       }
     }
