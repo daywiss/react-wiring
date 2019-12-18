@@ -176,6 +176,9 @@ Use wiring can only be called within a React component
   - `function isEqual(prev,next)=>boolean` - a function which takes the previous state 
     and next state and returns true if no change happens or false if a change happens
     this is exactly the same as React.memo
+
+#### Output [state,dispatch,curryDispatch]
+- state - Your store state
 - function dispatch(action,...arguments) - a function which takes and action and arguments
   - action - a string or array of strings which represent the path to the reducer function 
   - arguments - all arguments get passed into reducer
