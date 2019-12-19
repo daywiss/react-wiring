@@ -144,7 +144,7 @@ Use wiring can only be called within a React component
      An empty string will subscribe you to any state changes.
   - `Array<string>` - an array of strings in lodash path notion, allows you to listen to multiple changes.
      An empty array will subscribe you to any state changes.
-  - `Array<Array<string>> - an array of arrays of strings, like `[['path','a'],['path','b']]`
+  - `Array<Array<string>>` - an array of arrays of strings, like `[['path','a'],['path','b']]`
   - `function isEqual(prev,next)=>boolean` - a function which takes the previous state 
     and next state and returns true if no change happens or false if a change happens
     this is exactly the same as React.memo
@@ -168,8 +168,7 @@ Outputs an array of parameters that should be destructured.
 
 ### Store
 The store allows you to listen to state change and mutate state outside of React.
-```js
-  const [_,store] = Wiring(reducer)
+  const [_,store] = Wiring(React,reducer)
   const {dispatch,curry,set,get,on,off} = store
 ```
 #### Properties
