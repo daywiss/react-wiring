@@ -100,29 +100,28 @@ ReactDOM.render(
   - **state** - the current state in the store ( do not modify in reducer)
   - **...dispatchArguments** - parameters passed in from dispatch call, can be anything 
   - **=> state** - the new state after reducer runs
-
-```js
-const reducers = {
-  setBalance(state,amount){
-    return {
-      ...state,
-      balance:{
-        ...state.balance,
-        amount
+    ```js
+    const reducers = {
+      setBalance(state,amount){
+        return {
+          ...state,
+          balance:{
+            ...state.balance,
+            amount
+          }
+        }
+      },
+      addBalance(state,add){
+        return {
+          ...state,
+          balance:{
+            ...state.balance,
+            amount:state.balance.amount + add
+          }
+        }
       }
     }
-  },
-  addBalance(state,add){
-    return {
-      ...state,
-      balance:{
-        ...state.balance,
-        amount:state.balance.amount + add
-      }
-    }
-  }
-}
-```
+    ```
 
 - **initialState** - An object with anything in it as your starting state
 
@@ -135,10 +134,13 @@ Use wiring can only be called within a React component
 ```js
   // in a component
   const [state,dispatch,curryDispatch,get] = useWiring(subscriptions,...resubscribe)
+
+  //if you only need certain return values, this is valid
+  const [,,curry,get] = useWiring(subscriptions,...resubscribe)
 ```
 
-#### Input (subscriptions,...resubscribe)
-- **subscription** - This is how you subscribe to state changes, and can be defined in many ways:
+#### Input useWiring(subscriptions,...resubscribe)
+- **subscriptions** - This is how you subscribe to state changes, and can be defined in many ways:
   - `undefined` - render will happen once and no more
   - `string` - a single string to listen to one property on state, in lodash path notation.
      An empty string will subscribe you to any state changes.
@@ -148,7 +150,7 @@ Use wiring can only be called within a React component
   - `function isEqual(prev,next)=>boolean` - a function which takes the previous state 
     and next state and returns true if no change happens or false if a change happens
     this is exactly the same as React.memo
-- **resubscribe** - Arguments for data that lives outside of the store which may require a new subscription on change.
+- **resubscribe** - Optional arguments for data that lives outside of the store which may require a new subscription on change.
    For the most part you only need this if you have variables in your path subscriptions that are dynamic.
 
 #### Output => [state,dispatch,curryDispatch,get]
