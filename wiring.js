@@ -1,5 +1,7 @@
 import assert from './assert'
 import Store from './store'
+import isFunction from 'lodash.isfunction'
+import isArray from 'lodash.isarray'
 
 export default (React,reducers,state) => {
   assert(React,'requires react >=16.8')
@@ -9,12 +11,14 @@ export default (React,reducers,state) => {
 
   const store = Store(reducers,state)
 
+  function useWiring(isEqual,...resubscribe){
+    const [state,setState] = useState(store.get())
+    useEffect(x=>store.on(state=>setState(state),isEqual),resubscribe)
+    return [state,store.dispatch,store.curry,store.get]
+  }
+
   return [
-    function useWiring(isEqual,map=x=>x){
-      const [state,setState] = useState(map(store.get()))
-      useEffect(x=>store.on(state=>setState(map(state)),isEqual),[])
-      return [state,store.dispatch,store.curry]
-    },
+    useWiring,
     store
   ]
 

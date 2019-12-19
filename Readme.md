@@ -4,20 +4,19 @@ High performance and fine grained change subscriptions using React Hooks.
 ## Install
 `yarn add https://github.com/daywiss/react-wiring`
 
-## 3.0
+## v3.0
 Previous version used Providers, Contexts and useReducer, and failed attempts to optimize led me to
 eventually discard them. Now wiring uses Custom change detection and `useState`. 
 For high performance this library assumes you construct your state changes in a way where 
 shallow comparisons are all that is needed.
 
-## Compared To React useReducer, Contexts and Providers
-### Benefits
+## Benefits
 - No need for wrapper containers for context or to optimize component rendering 
 - No need for Providers around your app
 - No need for React.memo or useMemo, renders are triggerd only on data changes you subscribe to
-- No need to map global state in component because you can get entire state with no penalty, 
-  though mapping is available
+- No need to map global state in component because you can get entire state with no penalty.
 - No penalty for wiring in many components unless they listen to many state changes, and even then its low
+- Split up your state naturally with multiple react-wiring instances
 - Reducers are composable and can be nested because they are just JS Objects
 - Keep component props clean, state is not mixed into component props.
 - Seperate state and dispatch so dispatch does not pollute state
@@ -27,10 +26,15 @@ shallow comparisons are all that is needed.
 - Small footprint, 32k uncompressed
 - Very minimal API to learn and no boilerplate
 
-### Drawbacks
+## Drawbacks
 - Custom change detector only does shallow comparison for changed objects, 
   this should not be a problem as this is the standard way to update state in reducer
-
+- Maintains reference to current state in store, which means you cannot modify state directly in reducer
+  or changes will not be detected.
+- There is no guard against mutating state outside of the store so you have to be very careful.
+- Modifying deeply nested state can be tricky, as it may mutate store state if not done right. Its recommended 
+  to use a helper function which will touch the object along the entire path.
+  
 ## Quick Start
 
 ```js
@@ -59,7 +63,7 @@ const [
 
 
 //this is the main app using the connect function.
-const App = connect(props=>{
+const App = props=>{
   //you want to listen to the 'initialized' property on state
   //it is optional to listen for changes, if omitted you will just get latest state
   const [state,dispatch] = useWiring('initialized')
@@ -69,7 +73,7 @@ const App = connect(props=>{
     Initialized? {initialized.toString()}
     <Button onClick={e=>dispatch('initialize',true)} />
   </div>
-})
+}
 
 
 //initilize react app
@@ -82,29 +86,58 @@ ReactDOM.render(
 ```
 
 ## API
-### React-Wiring Construction
-```
+### Construction
+```js
   import Wiring from 'react-wiring'
   const [useWiring,store] = Wiring(React,reducers,initialState={})
 ```
   
 #### Input(React,reducers,initialState={})
-- **React** - pass in your React object vs 16.8 or higher (requires hooks)
+- **React** - pass in your React object v16.8 or higher (requires hooks)
 - **reducers** - A plain object with reducer functions as values
+- **reducer(state,...dispatchArguments)=>state** - A named callback function with current state passed in and any 
+  user provided arguments.
+  - **state** - the current state in the store ( do not modify in reducer)
+  - **...dispatchArguments** - parameters passed in from dispatch call, can be anything 
+  - **=> state** - the new state after reducer runs
+
+```js
+const reducers = {
+  setBalance(state,amount){
+    return {
+      ...state,
+      balance:{
+        ...state.balance,
+        amount
+      }
+    }
+  },
+  addBalance(state,add){
+    return {
+      ...state,
+      balance:{
+        ...state.balance,
+        amount:state.balance.amount + add
+      }
+    }
+  }
+}
+```
+
 - **initialState** - An object with anything in it as your starting state
 
 #### Output => [useWiring,store]
 - **useWiring** - the use wiring hook for inside a React component
-- **store** - the data store which allows you to get, set, dispatch and listen to state changes
+- **store** - the data store which allows you to get, set, dispatch and listen to state changes outside of React
 
 ### useWiring
 Use wiring can only be called within a React component
 ```
   // in a component
-  const [state,dispatch,curryDispatch] = useWiring(subscriptions,mapping)
+  const [state,dispatch,curryDispatch,get] = useWiring(subscriptions,...resubscribe)
 ```
 
-#### Input (subscriptions,mapping)
+#### Input (subscriptions,...resubscribe)
 - **subscription** - This is how you subscribe to state changes, and can be defined in many ways:
   - `undefined` - render will happen once and no more
   - `string` - a single string to listen to one property on state, in lodash path notation.
@@ -115,10 +148,10 @@ Use wiring can only be called within a React component
   - `function isEqual(prev,next)=>boolean` - a function which takes the previous state 
     and next state and returns true if no change happens or false if a change happens
     this is exactly the same as React.memo
-- **mapping(state)=>mappedState** - This is a function which takes in state and returns a mapped state.
-  It does not affect the way you subscribe, that is relative to unmapped state.
+- **resubscribe** - Arguments for data that lives outside of the store which may require a new subscription on change.
+   For the most part you only need this if you have variables in your path subscriptions that are dynamic.
 
-#### Output => [state,dispatch,curryDispatch]
+#### Output => [state,dispatch,curryDispatch,get]
 Outputs an array of parameters that should be destructured.
 
 - **state** - Your store state
@@ -128,10 +161,14 @@ Outputs an array of parameters that should be destructured.
   - example: `login(username,password).then(x=>dispatch('showSuccess','Login Complete')).catch(err=>dispatch('showError',err))`
 - **function curryDispatch(action)=>(...arguments)** - a function which returns the call for arguments
   - example: `login(username,password).then(x=>curryDispatch('showSuccess')('Login Complete')).catch(curryDispatch('showError'))`
+- **function get(path,defaults)** - a function which will allow lodash notation 
+    to get properties inside the state and avoid runtime errors.
+  - **path** - a string or array in lodash path notation. If not specified will return entire state.
+  - **defaults** - an optional parameter to return if the data is undefined at that path
 
 ### Store
 The store allows you to listen to state change and mutate state outside of React.
-```
+```js
   const [_,store] = Wiring(reducer)
   const {dispatch,curry,set,get,on,off} = store
 ```
@@ -142,12 +179,14 @@ The store allows you to listen to state change and mutate state outside of React
 - **store.curry(action)(...arguments)** - Call a reducer in a curried way.
   - **action** - a string or array of strings which represent the path to the reducer function 
   - **arguments** - all arguments get passed into reducer
-- **store.get()** - return current state
-- **store.set(state)** - set state and trigger all listeners
+- **store.get(path,defaults)** - return current state or partial state based on path in lodash path notation.
+  - **path** - a string or array in lodash path notation. If not specified will return entire state.
+  - **defaults** - an optional parameter to return if the data is undefined at that path
+- **store.set(state)** - set state and trigger all listeners. Anything passed in here replaces the state.
 - **store.on(callback,subscriptions)=>off** - subscribe to state changes
   - **callback(state)** - callback expects a single input which is the store state
   - **subscriptions** - optional field to subscribe to key changes on state, defined above in useWiring
-  - **returns - off()** - return unsubscribe function
+  - **=> off()** - return unsubscribe function
 - **store.off(callback)** - unsubscribe by passing callback function subscription in
 
 ## Guide
@@ -158,7 +197,7 @@ reducer objects. This does not provide any performance
 improvents and is just organizational. 
 
 
-```
+```js
 //user-reducer.js
 export default {
   updateUserName(state,name){
@@ -170,7 +209,7 @@ export default {
 }
 ```
 
-```
+```js
 //wallet-reducer.js
 export default {
   setBalance(state,balance){
@@ -182,7 +221,7 @@ export default {
 }
 ```
 
-```
+```js
 //combine-reducers.js
 import users from './user-reducer'
 import wallets from './wallet-reducer'
@@ -218,7 +257,7 @@ export function Balance(props){
 ### Add Reducers at Runtime
 Because the reducer is a javascript object we can just attach new keys at any point.
 
-```
+```js
 
 const reducers = { 
   users,

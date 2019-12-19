@@ -63,8 +63,10 @@ export default (reducers,state={})=>{
     return listeners.delete(cb)
   }
 
-  function getState(){
-    return state
+  function getState(path,def){
+    if(path == null) return state
+    if(path.length == 0) return state
+    return get(state,path,def)
   }
 
   return {
