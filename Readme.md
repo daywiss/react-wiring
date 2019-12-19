@@ -132,7 +132,7 @@ const reducers = {
 
 ### useWiring
 Use wiring can only be called within a React component
-```
+```js
   // in a component
   const [state,dispatch,curryDispatch,get] = useWiring(subscriptions,...resubscribe)
 ```
@@ -167,6 +167,7 @@ Outputs an array of parameters that should be destructured.
   - **defaults** - an optional parameter to return if the data is undefined at that path
 
 ### Store
+```js
 The store allows you to listen to state change and mutate state outside of React.
   const [_,store] = Wiring(React,reducer)
   const {dispatch,curry,set,get,on,off} = store
@@ -227,12 +228,21 @@ import wallets from './wallet-reducer'
 import Wiring from 'react-wiring'
 import React from 'react'
 
-const reducers = { 
+export default const reducers = { 
   users,
   wallets,
 }
+```
 
-const [useWiring,store] = Wiring(React,reducers)
+```js
+//wiring.js
+import reducers from './combine-reducers'
+
+export default const [useWiring,store] = Wiring(React,reducers)
+```
+
+```js
+import {useWiring} from './wiring'
 
 //using it in a component
 export function Balance(props){
