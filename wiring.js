@@ -1,7 +1,7 @@
 import assert from './assert'
 import Store from './store'
-import isFunction from 'lodash.isfunction'
-import isArray from 'lodash.isarray'
+import isArray from 'lodash/isArray'
+import isFunction from 'lodash/isFunction'
 
 export default (React,reducers,state) => {
   assert(React,'requires react >=16.8')

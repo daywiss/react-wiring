@@ -1,8 +1,8 @@
-import get from 'lodash.get'
-import isArray from 'lodash.isarray'
-import isFunction from 'lodash.isfunction'
-import isString from 'lodash.isstring'
 import assert from './assert'
+import get from 'lodash/get'
+import isArray from 'lodash/isArray'
+import isFunction from 'lodash/isFunction'
+import isString from 'lodash/isString'
 
 export default (reducers,state={})=>{
 
@@ -17,10 +17,13 @@ export default (reducers,state={})=>{
   const curry = action => (...args) => dispatch(action,...args)
 
   function set(next){
-    for (let [cb, isEqual] of listeners.entries()){
-      if(!isEqual(state,next)) cb(next)
-    }
+    //swap state to be next before running callbacks
+    //because they may try to get state when executing
+    const prev = state
     state = next
+    for (let [cb, isEqual] of listeners.entries()){
+      if(!isEqual(prev,next)) cb(next)
+    }
   }
 
   const wrapPathArray = (paths=[]) => (prev,next)=>{
@@ -66,6 +69,7 @@ export default (reducers,state={})=>{
   function getState(path,def){
     if(path == null) return state
     if(path.length == 0) return state
+    // console.log('getting',path,state)//,path,def,get(state,path,def))
     return get(state,path,def)
   }
 
